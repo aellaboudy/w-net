@@ -10,6 +10,7 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
 
     train_datagen = ImageDataGenerator(rescale=1. / 255)
     val_datagen = ImageDataGenerator(rescale=1. / 255)
+    
 
     train_generator1 = train_datagen.flow_from_directory(
         train_folder,
