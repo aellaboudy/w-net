@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 def main(args):
     img_rows = 128
     img_cols = 832/2
-    batch_size = 6
+    batch_size = 1
     n_epochs = 100
     models_folder = 'models'
     model_name = 'w_net_V12'

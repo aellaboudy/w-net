@@ -18,8 +18,8 @@ config:
       function: !!python/tuple
       - "c\x01\0\0\0\x01\0\0\0\x05\0\0\0\x13\0\x01\0s\x1D\0\0\0|\0\0d\x01\0\x88\0\0\
         d\0\0\N\x02\0d\0\0d\0\0\N\x02\0f\x03\0\x19S(\x02\0\0\0N.(\0\0\0\0(\x01\0\0\
-        \0t\x01\0\0\0x(\x01\0\0\0t\b\0\0\0img_cols(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-        \0\0\0<lambda>\x80\0\0\0t\0\0\0\0"
+        \0t\x01\0\0\0x(\x01\0\0\0t\b\0\0\0img_cols(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+        \0\0\0<lambda>\x81\0\0\0t\0\0\0\0"
       - null
       - !!python/tuple [416]
       function_type: lambda
@@ -39,8 +39,8 @@ config:
       function: !!python/tuple
       - "c\x01\0\0\0\x01\0\0\0\x05\0\0\0\x13\0\x01\0s\x1D\0\0\0|\0\0d\x01\0d\0\0\x88\
         \0\0\N\x02\0d\0\0d\0\0\N\x02\0f\x03\0\x19S(\x02\0\0\0N.(\0\0\0\0(\x01\0\0\0\
-        t\x01\0\0\0x(\x01\0\0\0t\b\0\0\0img_cols(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-        \0\0\0<lambda>\x7F\0\0\0t\0\0\0\0"
+        t\x01\0\0\0x(\x01\0\0\0t\b\0\0\0img_cols(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+        \0\0\0<lambda>\x80\0\0\0t\0\0\0\0"
       - null
       - !!python/tuple [416]
       function_type: lambda
@@ -83,7 +83,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: &id002 !!python/tuple [1, 1]
-      filters: 32
+      filters: 128
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_1
       padding: same
@@ -149,7 +149,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 32
+      filters: 128
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_2
       padding: same
@@ -229,7 +229,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_3
       padding: same
@@ -295,7 +295,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_4
       padding: same
@@ -375,7 +375,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 128
+      filters: 512
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_5
       padding: same
@@ -441,7 +441,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 128
+      filters: 512
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_6
       padding: same
@@ -521,7 +521,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 256
+      filters: 1024
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_7
       padding: same
@@ -587,7 +587,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 256
+      filters: 1024
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_8
       padding: same
@@ -667,7 +667,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 512
+      filters: 2048
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_9
       padding: same
@@ -733,7 +733,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 512
+      filters: 2048
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_10
       padding: same
@@ -792,7 +792,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 256
+      filters: 1024
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -833,7 +833,7 @@ config:
       bias_regularizer: null
       data_format: channels_last
       dilation_rate: *id002
-      filters: 256
+      filters: 1024
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -899,7 +899,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 256
+      filters: 1024
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_11
       padding: same
@@ -966,7 +966,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 128
+      filters: 512
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1007,7 +1007,7 @@ config:
       bias_regularizer: null
       data_format: channels_last
       dilation_rate: *id002
-      filters: 128
+      filters: 512
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1073,7 +1073,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 128
+      filters: 512
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_12
       padding: same
@@ -1140,7 +1140,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 64
+      filters: 256
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1181,7 +1181,7 @@ config:
       bias_regularizer: null
       data_format: channels_last
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1247,7 +1247,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_13
       padding: same
@@ -1314,7 +1314,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 64
+      filters: 256
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1355,7 +1355,7 @@ config:
       bias_regularizer: null
       data_format: channels_last
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1421,7 +1421,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 64
+      filters: 256
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_14
       padding: same
@@ -1481,10 +1481,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\0\0d\x02\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i \0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xCC\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x05\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0d\0\0t\0\0d\x02\0\x14\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x02\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xCE\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_8
       output_shape: null
@@ -1499,10 +1500,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\0\0d\x02\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i@\0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xC7\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x05\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0d\0\0t\0\0d\x02\0\x14\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x04\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xC9\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_6
       output_shape: null
@@ -1517,10 +1519,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\0\0d\x02\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x80\0\0\0(\0\
-          \0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xC2\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x05\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0d\0\0t\0\0d\x02\0\x14\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\b\0\
+          \0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\
+          \0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xC3\0\0\0t\0\0\
+          \0\0", null, null]
       function_type: lambda
       name: lambda_4
       output_shape: null
@@ -1535,10 +1538,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\x02\0d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i \0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xCA\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0t\0\0d\x02\0\x14d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x02\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xCC\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_7
       output_shape: null
@@ -1553,10 +1557,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\x02\0d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i@\0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xC5\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0t\0\0d\x02\0\x14d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x04\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xC7\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_5
       output_shape: null
@@ -1571,10 +1576,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\x02\0d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x80\0\0\0(\0\
-          \0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xC0\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0t\0\0d\x02\0\x14d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\b\0\
+          \0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\
+          \0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xC1\0\0\0t\0\0\
+          \0\0", null, null]
       function_type: lambda
       name: lambda_3
       output_shape: null
@@ -1589,10 +1595,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\x02\0d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i \0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xCF\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0t\0\0d\x02\0\x14d\0\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x02\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xD1\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_10
       output_shape: null
@@ -1614,7 +1621,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1642,7 +1649,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1670,7 +1677,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1691,10 +1698,11 @@ config:
   - class_name: Lambda
     config:
       arguments: {}
-      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
-          \0|\0\0d\x01\0d\0\0d\x02\0\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i \0\0\0(\0\0\
-          \0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xCE\0\0\0t\0\0\0\0", null, null]
+      function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x05\0\0\0S\0\x01\0s\x18\0\0\
+          \0|\0\0d\x01\0d\0\0t\0\0d\x02\0\x14\N\x02\0f\x02\0\x19S(\x03\0\0\0N.i\x02\
+          \0\0\0(\x01\0\0\0t\x02\0\0\0dl(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0\
+          s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xD0\0\0\0\
+          t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_9
       output_shape: null
@@ -1716,7 +1724,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1744,7 +1752,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1772,7 +1780,7 @@ config:
         config: {}
       bias_regularizer: null
       data_format: channels_last
-      filters: 32
+      filters: 128
       kernel_constraint: null
       kernel_initializer:
         class_name: VarianceScaling
@@ -1797,8 +1805,8 @@ config:
           t\0\0j\x01\0t\0\0j\x02\0g\0\0|\0\0D]\f\0}\x01\0|\x01\0^\x02\0q\x13\0\x83\
           \x01\0d\x01\0d\x02\0\x83\x01\x01S(\x03\0\0\0Nt\x04\0\0\0axisi\0\0\0\0(\x03\
           \0\0\0t\x01\0\0\0Kt\x04\0\0\0meant\x05\0\0\0stack(\x02\0\0\0t\x01\0\0\0\
-          xt\x02\0\0\0xi(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xD6\0\0\0t\0\0\0\0", null, null]
+          xt\x02\0\0\0xi(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xD8\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_12
       output_shape: null
@@ -1829,8 +1837,8 @@ config:
           t\0\0j\x01\0t\0\0j\x02\0g\0\0|\0\0D]\f\0}\x01\0|\x01\0^\x02\0q\x13\0\x83\
           \x01\0d\x01\0d\x02\0\x83\x01\x01S(\x03\0\0\0Nt\x04\0\0\0axisi\0\0\0\0(\x03\
           \0\0\0t\x01\0\0\0Kt\x04\0\0\0meant\x05\0\0\0stack(\x02\0\0\0t\x01\0\0\0\
-          xt\x02\0\0\0xi(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xD1\0\0\0t\0\0\0\0", null, null]
+          xt\x02\0\0\0xi(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xD3\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_11
       output_shape: null
@@ -1871,7 +1879,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 32
+      filters: 128
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_16
       padding: same
@@ -1906,7 +1914,7 @@ config:
         config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
       depthwise_regularizer: null
       dilation_rate: *id002
-      filters: 32
+      filters: 128
       kernel_size: !!python/tuple [3, 3]
       name: separable_conv2d_15
       padding: same
@@ -1930,7 +1938,7 @@ config:
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x13\0\0\
           \0t\0\0j\x01\0|\0\0d\x01\0d\x02\0\x83\x01\x01S(\x03\0\0\0Nt\x04\0\0\0axisi\x03\
           \0\0\0(\x02\0\0\0t\x01\0\0\0Kt\x04\0\0\0mean(\x01\0\0\0t\x01\0\0\0x(\0\0\
-          \0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xEF\
+          \0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xF1\
           \0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_13
@@ -1949,7 +1957,7 @@ config:
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x13\0\0\
           \0t\0\0j\x01\0|\0\0d\x01\0d\x02\0\x83\x01\x01S(\x03\0\0\0Nt\x04\0\0\0axisi\x03\
           \0\0\0(\x02\0\0\0t\x01\0\0\0Kt\x04\0\0\0mean(\x01\0\0\0t\x01\0\0\0x(\0\0\
-          \0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xF0\
+          \0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xF2\
           \0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_14
@@ -1975,8 +1983,8 @@ config:
       arguments: {}
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x03\0\0\0S\0\x01\0s\x11\0\0\
           \0|\0\0t\0\0j\x01\0|\0\0\x83\x01\0\x15S(\x01\0\0\0N(\x02\0\0\0t\x01\0\0\0\
-          Kt\x03\0\0\0max(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xF2\0\0\0t\0\0\0\0", null, null]
+          Kt\x03\0\0\0max(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xF4\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_15
       output_shape: null
@@ -2001,8 +2009,8 @@ config:
       arguments: {}
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x03\0\0\0S\0\x01\0s\x11\0\0\
           \0|\0\0t\0\0j\x01\0|\0\0\x83\x01\0\x15S(\x01\0\0\0N(\x02\0\0\0t\x01\0\0\0\
-          Kt\x03\0\0\0max(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0/home/ameer/w-net/w_net_v11.pyt\b\
-          \0\0\0<lambda>\xF3\0\0\0t\0\0\0\0", null, null]
+          Kt\x03\0\0\0max(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xF5\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_16
       output_shape: null
@@ -2087,9 +2095,8 @@ config:
       arguments: {}
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
           \0|\0\0d\x01\0\x19d\x02\0|\0\0d\x02\0\x19\x18\x14S(\x03\0\0\0Ni\0\0\0\0\
-          i\x01\0\0\0(\0\0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0\
-          /home/ameer/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xF8\0\0\0t\0\0\0\0", null,
-        null]
+          i\x01\0\0\0(\0\0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xFA\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_17
       output_shape: null
@@ -2110,9 +2117,8 @@ config:
       arguments: {}
       function: !!python/tuple ["c\x01\0\0\0\x01\0\0\0\x04\0\0\0S\0\x01\0s\x14\0\0\
           \0|\0\0d\x01\0\x19d\x02\0|\0\0d\x02\0\x19\x18\x14S(\x03\0\0\0Ni\0\0\0\0\
-          i\x01\0\0\0(\0\0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s\x1E\0\0\0\
-          /home/ameer/w-net/w_net_v11.pyt\b\0\0\0<lambda>\xF9\0\0\0t\0\0\0\0", null,
-        null]
+          i\x01\0\0\0(\0\0\0\0(\x01\0\0\0t\x01\0\0\0x(\0\0\0\0(\0\0\0\0s$\0\0\0/home/ameer/w-net/w-net/w_net_v11.pyt\b\
+          \0\0\0<lambda>\xFB\0\0\0t\0\0\0\0", null, null]
       function_type: lambda
       name: lambda_18
       output_shape: null
