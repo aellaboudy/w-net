@@ -30,7 +30,7 @@ def main(args):
     	print('...')
     	print('building model...')
 
-    	w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-4)
+    	w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-5)
 
     	print('saving model to {}...'.format(model_path))
     	model_yaml = w_net.to_yaml()
