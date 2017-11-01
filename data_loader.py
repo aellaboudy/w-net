@@ -52,14 +52,14 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
         while True:
             X = train_generator1.next()
             Y1 = train_generator2.next()
-            yield X, [Y1, np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4)),
+            yield X, [Y1, Y1, np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4)),
                       np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4))]
 
     def val_generator_func():
         while True:
             X = validation_generator1.next()
             Y1 = validation_generator2.next()
-            yield X, [Y1, np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4)),
+            yield X, [Y1, Y1, np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4)),
                       np.zeros(shape=(Y1.shape[0], img_rows - 4, img_cols - 4))]
 
     train_generator = train_generator_func()

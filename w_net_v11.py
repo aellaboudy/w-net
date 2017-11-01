@@ -250,8 +250,15 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     right_disparity_levels = range(dl, -dl, -1)
     left_reconstruct_im = Selection(disparity_levels=right_disparity_levels)([right_input_image, right_disparity])
 
+    right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
+    left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
+
     # concatenate left and right images along the channel axis
-    output = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
+    output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
+
+    output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
+
+
 
     # gradient regularization:
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
@@ -271,15 +278,14 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     weighted_gradient_left = Lambda(lambda x: x[0] * (1 - x[1]))([depth_left_gradient, image_left_gradient])
     weighted_gradient_right = Lambda(lambda x: x[0] * (1 - x[1]))([depth_right_gradient, image_right_gradient])
 
-    model = Model(inputs=[inputs], outputs=[output, weighted_gradient_left, weighted_gradient_right])
+    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right])
 
     disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
 
     # we use L1 type loss as it has been shown to work better for that type of problem in the deep3d paper
     # (https://arxiv.org/abs/1604.03650)
-    model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1., 0.001, 0.001])
+    model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1.,1.,0.001,0.001])
     model.summary()
 
-    print (left_disparity_level_4)
 
     return model, disp_map_model
