@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 def main(args):
     img_rows = 128
     img_cols = 832/2
-    batch_size = 1
-    n_epochs = 100
+    batch_size = 2
+    n_epochs = 10
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
