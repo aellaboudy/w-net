@@ -13,15 +13,15 @@ def main(args):
     img_rows = 128
     img_cols = 832/2
     batch_size = 2
-    n_epochs = 10
+    n_epochs = 100
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
     train = True
 
     if train:
-    	train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='train',
-                                                                                        val_folder='validation',
+    	train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ameer/SfMLearner/stereoimages/images/train/',
+                                                                                        val_folder='/home/ameer/SfMLearner/stereoimages/images/val/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
@@ -30,7 +30,7 @@ def main(args):
     	print('...')
     	print('building model...')
 
-    	w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-5)
+    	w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-7)
 
     	print('saving model to {}...'.format(model_path))
     	model_yaml = w_net.to_yaml()
@@ -38,14 +38,13 @@ def main(args):
         	yaml_file.write(model_yaml)
 
     	print('begin training model, {} epochs...'.format(n_epochs))
-    	for epoch in range(n_epochs):
-
-        	print('epoch {} \n'.format(epoch))
-		print('Validation steps {} \n'.format(val_samples//batch_size))
-        	model_path = os.path.join(models_folder, model_name + '_epoch_{}'.format(epoch))
-        	w_net.fit_generator(train_generator,
+       	print('Validation steps {} \n'.format(val_samples//batch_size))
+        model_path = os.path.join(models_folder, model_name)
+        #w_net.load_weights(model_path + '.h5') #load weights to resume training
+	#Add call to w_net.load(filename) to resume training from checkpoint
+        w_net.fit_generator(train_generator,
                             steps_per_epoch=training_samples // batch_size,
-                            epochs=1,
+                            epochs=n_epochs,
                             validation_data=val_generator,
                             validation_steps=val_samples // batch_size,
                             verbose=1,

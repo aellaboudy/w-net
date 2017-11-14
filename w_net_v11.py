@@ -244,10 +244,10 @@ def get_unet(img_rows, img_cols, lr=1e-4):
 
     right_disparity = SeparableConv2D(dl*2, (3, 3), activation='softmax', padding='same')(right_disparity)
 
-    left_disparity_levels = range(-dl, dl, 1)
+    left_disparity_levels = range(0, dl*2, 1)
     right_reconstruct_im = Selection(disparity_levels=left_disparity_levels)([left_input_image, left_disparity])
 
-    right_disparity_levels = range(dl, -dl, -1)
+    right_disparity_levels = range(0, -dl*2, -1)
     left_reconstruct_im = Selection(disparity_levels=right_disparity_levels)([right_input_image, right_disparity])
 
     right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
@@ -257,9 +257,7 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
 
     output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
-
-
-
+    
     # gradient regularization:
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
     depth_right = Depth(disparity_levels=left_disparity_levels)(right_disparity)
