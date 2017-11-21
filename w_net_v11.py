@@ -158,56 +158,37 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     conv5 = BatchNormalization()(conv5)
     conv5 = SeparableConv2D(dl*32, (3, 3), activation='relu', padding='same')(conv5)
     conv5 = BatchNormalization()(conv5)
-    pool5 = MaxPooling2D(pool_size=(2, 2))(conv5)
 
-    conv6 = SeparableConv2D(dl*64, (3, 3), activation='relu', padding='same')(pool5)
+    up6 = concatenate([Conv2DTranspose(dl*16, (2, 2), strides=(2, 2), padding='same')(conv5), conv4], axis=3)
+    conv6 = Conv2D(dl*16, (3, 3), activation='relu', padding='same')(up6)
     conv6 = BatchNormalization()(conv6)
-    conv6 = SeparableConv2D(dl*64, (3, 3), activation='relu', padding='same')(conv6)
+    conv6 = SeparableConv2D(dl*16, (3, 3), activation='relu', padding='same')(conv6)
     conv6 = BatchNormalization()(conv6)
+    conv6 = Dropout(rate=0.4)(conv6)
 
-    up7 = concatenate([Conv2DTranspose(dl*32, (2, 2), strides=(2, 2), padding='same')(conv6), conv5], axis=3)
-    conv7 = Conv2D(dl*32, (3, 3), activation='relu', padding='same')(up7)
+    up7 = concatenate([Conv2DTranspose(dl*8, (2, 2), strides=(2, 2), padding='same')(conv6), conv3], axis=3)
+    conv7 = Conv2D(dl*8, (3, 3), activation='relu', padding='same')(up7)
     conv7 = BatchNormalization()(conv7)
-    conv7 = SeparableConv2D(dl*32, (3, 3), activation='relu', padding='same')(conv7)
+    conv7 = SeparableConv2D(dl*8, (3, 3), activation='relu', padding='same')(conv7)
     conv7 = BatchNormalization()(conv7)
     conv7 = Dropout(rate=0.4)(conv7)
 
-
-    up8 = concatenate([Conv2DTranspose(dl*16, (2, 2), strides=(2, 2), padding='same')(conv7), conv4], axis=3)
-    conv8 = Conv2D(dl*16, (3, 3), activation='relu', padding='same')(up8)
+    up8 = concatenate([Conv2DTranspose(dl*4, (2, 2), strides=(2, 2), padding='same')(conv7), conv2], axis=3)
+    conv8 = Conv2D(dl*4, (3, 3), activation='relu', padding='same')(up8)
     conv8 = BatchNormalization()(conv8)
-    conv8 = SeparableConv2D(dl*16, (3, 3), activation='relu', padding='same')(conv8)
+    conv8 = SeparableConv2D(dl*4, (3, 3), activation='relu', padding='same')(conv8)
     conv8 = BatchNormalization()(conv8)
     conv8 = Dropout(rate=0.4)(conv8)
 
-    up9 = concatenate([Conv2DTranspose(dl*8, (2, 2), strides=(2, 2), padding='same')(conv8), conv3], axis=3)
-    conv9 = Conv2D(dl*8, (3, 3), activation='relu', padding='same')(up9)
+    up9 = concatenate([Conv2DTranspose(dl*4, (2, 2), strides=(2, 2), padding='same')(conv8), conv1], axis=3)
+    conv9 = Conv2D(dl*4, (3, 3), activation='relu', padding='same')(up9)
     conv9 = BatchNormalization()(conv9)
-    conv9 = SeparableConv2D(dl*8, (3, 3), activation='relu', padding='same')(conv9)
+    conv9 = SeparableConv2D(dl*4, (3, 3), activation='relu', padding='same')(conv9)
     conv9 = BatchNormalization()(conv9)
     conv9 = Dropout(rate=0.4)(conv9)
 
-    up10 = concatenate([Conv2DTranspose(dl*4, (2, 2), strides=(2, 2), padding='same')(conv9), conv2], axis=3)
-    conv10 = Conv2D(dl*4, (3, 3), activation='relu', padding='same')(up10)
-    conv10 = BatchNormalization()(conv10)
-    conv10 = SeparableConv2D(dl*4, (3, 3), activation='relu', padding='same')(conv10)
-    conv10 = BatchNormalization()(conv10)
-    conv10 = Dropout(rate=0.4)(conv10)
-
-    up11 = concatenate([Conv2DTranspose(dl*4, (2, 2), strides=(2, 2), padding='same')(conv10), conv1], axis=3)
-    conv11 = Conv2D(dl*4, (3, 3), activation='relu', padding='same')(up11)
-    conv11 = BatchNormalization()(conv11)
-    conv11 = SeparableConv2D(dl*4, (3, 3), activation='relu', padding='same')(conv11)
-    conv11 = BatchNormalization()(conv11)
-    conv11 = Dropout(rate=0.4)(conv11)
-
     # split into left/right disparity maps
 
-    left_disparity_level_5 = Conv2DTranspose(dl*2, (32, 32), strides=(32, 32), padding='same')(
-        Lambda(lambda x: x[..., dl*16:])(pool5))
-    right_disparity_level_5 = Conv2DTranspose(dl*2, (32, 32), strides=(32, 32), padding='same')(
-        Lambda(lambda x: x[..., :dl*16])(pool5))
-	
     left_disparity_level_4 = Conv2DTranspose(dl*2, (16, 16), strides=(16, 16), padding='same')(
         Lambda(lambda x: x[..., dl*8:])(pool4))
     right_disparity_level_4 = Conv2DTranspose(dl*2, (16, 16), strides=(16, 16), padding='same')(
@@ -224,39 +205,37 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     right_disparity_level_2 = Conv2DTranspose(dl*2, (4, 4), strides=(4, 4), padding='same')(
         Lambda(lambda x: x[..., :dl*2])(pool2))
 
-    left_disparity_level_1 = Lambda(lambda x: x[..., :dl*2])(conv11)
-    right_disparity_level_1 = Lambda(lambda x: x[..., dl*2:])(conv11)
+    left_disparity_level_1 = Lambda(lambda x: x[..., :dl*2])(conv9)
+    right_disparity_level_1 = Lambda(lambda x: x[..., dl*2:])(conv9)
 
     left_disparity = Lambda(lambda x: K.mean(K.stack([xi for xi in x]), axis=0))([left_disparity_level_1,
                                                                                   left_disparity_level_2,
                                                                                   left_disparity_level_3,
-                                                                                  left_disparity_level_4,
-								  		  left_disparity_level_5])
+                                                                                  left_disparity_level_4])
 
     right_disparity = Lambda(lambda x: K.mean(K.stack([xi for xi in x]), axis=0))([right_disparity_level_1,
                                                                                    right_disparity_level_2,
                                                                                    right_disparity_level_3,
-                                                                                   right_disparity_level_4,
-										   right_disparity_level_5])
+                                                                                   right_disparity_level_4])
 
     # use a softmax activation on the conv layer output to get a probabilistic disparity map
     left_disparity = SeparableConv2D(dl*2, (3, 3), activation='softmax', padding='same')(left_disparity)
 
     right_disparity = SeparableConv2D(dl*2, (3, 3), activation='softmax', padding='same')(right_disparity)
 
-    left_disparity_levels = range(0, dl*2, 1)
+    left_disparity_levels = range(0, dl*4, 2)
     right_reconstruct_im = Selection(disparity_levels=left_disparity_levels)([left_input_image, left_disparity])
 
-    right_disparity_levels = range(0, -dl*2, -1)
+    right_disparity_levels = range(0, -dl*4, -2)
     left_reconstruct_im = Selection(disparity_levels=right_disparity_levels)([right_input_image, right_disparity])
 
-    right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
-    left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
+    #right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
+    #left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
 
     # concatenate left and right images along the channel axis
     output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
 
-    output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
+    #output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
     
     # gradient regularization:
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
@@ -276,13 +255,13 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     weighted_gradient_left = Lambda(lambda x: x[0] * (1 - x[1]))([depth_left_gradient, image_left_gradient])
     weighted_gradient_right = Lambda(lambda x: x[0] * (1 - x[1]))([depth_right_gradient, image_right_gradient])
 
-    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right])
+    model = Model(inputs=[inputs], outputs=[output_reconstruct, weighted_gradient_left, weighted_gradient_right])
 
     disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
 
     # we use L1 type loss as it has been shown to work better for that type of problem in the deep3d paper
     # (https://arxiv.org/abs/1604.03650)
-    model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1.,1.,0.001,0.001])
+    model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1.,0.001,0.001])
     model.summary()
 
 
