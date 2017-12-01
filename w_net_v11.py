@@ -5,13 +5,12 @@ from keras.layers import Dropout
 from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, BatchNormalization, Lambda
 from keras.layers.convolutional import SeparableConv2D
 from keras.models import Model
-from keras.optimizers import Adam
 from keras.engine.topology import Layer
 
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-dl = 32
+dl = 64
 
 class Selection(Layer):
     def __init__(self, disparity_levels=None, **kwargs):
@@ -124,6 +123,7 @@ K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 def get_unet(img_rows, img_cols, lr=1e-4):
     inputs = Input((img_rows, 2 * img_cols, 3))  # 2 channels: left and right images
 
+	
     # split input left/right wise
     left_input_image = Lambda(lambda x: x[..., :img_cols, :])(inputs)
     right_input_image = Lambda(lambda x: x[..., img_cols:, :])(inputs)
@@ -223,19 +223,19 @@ def get_unet(img_rows, img_cols, lr=1e-4):
 
     right_disparity = SeparableConv2D(dl*2, (3, 3), activation='softmax', padding='same')(right_disparity)
 
-    left_disparity_levels = range(0, dl*4, 2)
+    left_disparity_levels = range(0, dl*2, 1)
     right_reconstruct_im = Selection(disparity_levels=left_disparity_levels)([left_input_image, left_disparity])
 
-    right_disparity_levels = range(0, -dl*4, -2)
+    right_disparity_levels = range(0, -dl*2, -1)
     left_reconstruct_im = Selection(disparity_levels=right_disparity_levels)([right_input_image, right_disparity])
 
-    #right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
-    #left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
+    right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
+    left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
 
     # concatenate left and right images along the channel axis
     output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
 
-    #output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
+    output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
     
     # gradient regularization:
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
@@ -255,13 +255,13 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     weighted_gradient_left = Lambda(lambda x: x[0] * (1 - x[1]))([depth_left_gradient, image_left_gradient])
     weighted_gradient_right = Lambda(lambda x: x[0] * (1 - x[1]))([depth_right_gradient, image_right_gradient])
 
-    model = Model(inputs=[inputs], outputs=[output_reconstruct, weighted_gradient_left, weighted_gradient_right])
+    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right])
 
     disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
 
     # we use L1 type loss as it has been shown to work better for that type of problem in the deep3d paper
     # (https://arxiv.org/abs/1604.03650)
-    model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1.,0.001,0.001])
+    #model.compile(optimizer=Adam(lr=lr), loss='mean_absolute_error', loss_weights=[1.,1.,0.001,0.001])
     model.summary()
 
 
