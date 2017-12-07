@@ -13,8 +13,8 @@ import tensorflow as tf
 
 
 def main(args):
-    img_rows = 128
-    img_cols = 832/2
+    img_rows = 128/2
+    img_cols = 832/4
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)

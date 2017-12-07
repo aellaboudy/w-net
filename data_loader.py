@@ -5,12 +5,11 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-
 def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, batch_size=16, shuffle=True):
 
     train_datagen = ImageDataGenerator(rescale=1. / 255)
     val_datagen = ImageDataGenerator(rescale=1. / 255)
-    
+   
 
     train_generator1 = train_datagen.flow_from_directory(
         train_folder,
@@ -34,7 +33,7 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
     def train_generator_func():
         while True:
             X = train_generator1.next()
-            yield X, [X, X, np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
+	    yield X, [X, X, np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
                       np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4))]
 
     def val_generator_func():
