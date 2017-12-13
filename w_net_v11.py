@@ -10,7 +10,7 @@ from keras.engine.topology import Layer
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-dl = 32
+dl = 50
 
 class Selection(Layer):
     def __init__(self, disparity_levels=None, **kwargs):

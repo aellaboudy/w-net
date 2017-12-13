@@ -12,16 +12,16 @@ from keras.optimizers import Adam
 
 
 def main(args):
-    img_rows = 128/2
-    img_cols = 832/4
-    batch_size = 4
+    img_rows = 128
+    img_cols = 832/2
+    batch_size = 1
     n_epochs = 100
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
 
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/amel/data/stereoimages/images/train/',
-                                                                                        val_folder='/home/amel/data/stereoimages/images/val/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/train/',
+                                                                                        val_folder='/home/ubuntu/data/stereoimages/images/val/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
@@ -32,11 +32,10 @@ def main(args):
 
     
     w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-7)
-    #w_net.load_weights(model_path + '.h5')
-
 
     w_net.compile(optimizer=Adam(lr=1e-7), loss='mean_absolute_error', loss_weights=[1.,1.,0.001,0.001])
-
+	
+    w_net.load_weights(model_path + '.h5')
     #print('saving model to {}...'.format(model_path))
     #model_yaml = w_net.to_yaml()
     #with open(model_path + ".yaml", "w") as yaml_file:
