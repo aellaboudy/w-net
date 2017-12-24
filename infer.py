@@ -40,11 +40,11 @@ def main(args):
     		disparity_map_left, disparity_map_right = disp_maps_forward.predict(dat[0][0:10])
 
     		depthMap_left = np.zeros(disparity_map_left[0,...,0].shape)
-    		for i_disp, disp in zip(range(0,100),np.rollaxis(disparity_map_left[0,...],2)):
+    		for i_disp, disp in zip(range(0,52*2),np.rollaxis(disparity_map_left[0,...],2)):
         		depthMap_left += disp*i_disp
 
     		depthMap_right = np.zeros(disparity_map_right[0,...,0].shape)
-    		for i_disp, disp in zip(range(0,-100),np.rollaxis(disparity_map_right[0,...],2)):
+    		for i_disp, disp in zip(range(0,-52*2),np.rollaxis(disparity_map_right[0,...],2)):
         		depthMap_right += disp*i_disp
         
     		plt.figure(figsize=(15,5))
