@@ -32,7 +32,7 @@ def main(args):
     K.set_session(tf.Session(config=config))
 
     # Adjust learning rate based on number of GPUs.
-    opt = Adadelta()
+    opt = Adam(lr=1e-5)
 
     # Add Horovod Distributed Optimizer.
     opt = hvd.DistributedOptimizer(opt)
@@ -58,7 +58,7 @@ def main(args):
     	# training is started with random weights or restored from a checkpoint.
     	hvd.callbacks.BroadcastGlobalVariablesCallback(0),
 
- 	ReduceLROnPlateau(patience=3, verbose=1)
+ 	ReduceLROnPlateau(patience=1, verbose=1)
     ]
 
     model_path = os.path.join(models_folder, model_name)
