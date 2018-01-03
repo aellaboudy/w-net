@@ -6,11 +6,13 @@ from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspo
 from keras.layers.convolutional import SeparableConv2D
 from keras.models import Model
 from keras.engine.topology import Layer
+import numpy as np
+from skimage.measure import compare_ssim as ssim
 
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-dl = 52
+dl = 60
 
 class Selection(Layer):
     def __init__(self, disparity_levels=None, **kwargs):
@@ -252,10 +254,10 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     image_left_gradient = Gradient()(left_input_im_gray_norm)
     image_right_gradient = Gradient()(right_input_im_gray_norm)
 
-    weighted_gradient_left = Lambda(lambda x: x[0] * (1 - x[1]))([depth_left_gradient, image_left_gradient])
-    weighted_gradient_right = Lambda(lambda x: x[0] * (1 - x[1]))([depth_right_gradient, image_right_gradient])
+    weighted_gradient_left = Lambda(lambda x: x[0] * (1-x[1]))([depth_left_gradient, image_left_gradient])
+    weighted_gradient_right = Lambda(lambda x: x[0] * (1-x[1]))([depth_right_gradient, image_right_gradient])
 
-    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right])
+    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right, depth_left, depth_right])
 
     disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
 

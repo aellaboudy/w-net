@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 from keras.utils.training_utils import multi_gpu_model
-from keras.optimizers import Adam, Adadelta
+from keras.optimizers import Adam, Adadelta, RMSprop
 import horovod.keras as hvd
 from keras import backend as K    
 
@@ -32,13 +32,13 @@ def main(args):
     K.set_session(tf.Session(config=config))
 
     # Adjust learning rate based on number of GPUs.
-    opt = Adadelta()
+    opt = Adam(lr=1e-7)
 
     # Add Horovod Distributed Optimizer.
     opt = hvd.DistributedOptimizer(opt)
     
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/train/',
-                                                                                        val_folder='/home/ubuntu/data/stereoimages/images/val/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/val/',
+                                                                                        val_folder='/home/ubuntu/data/stereoimages/images/test/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
@@ -50,7 +50,7 @@ def main(args):
     w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-7)
 
 
-    w_net.compile(optimizer=opt, loss='mean_absolute_error', loss_weights=[1.,0.,0.001,0.001])
+    w_net.compile(optimizer=opt, loss='mean_absolute_error', loss_weights=[1.,0.,0.001,0.001,0.,0.])
     
     callbacks = [
     	# Broadcast initial variable states from rank 0 to all other processes.
@@ -58,7 +58,6 @@ def main(args):
     	# training is started with random weights or restored from a checkpoint.
     	hvd.callbacks.BroadcastGlobalVariablesCallback(0),
 
- 	ReduceLROnPlateau(patience=3, verbose=1)
     ]
 
     model_path = os.path.join(models_folder, model_name)
