@@ -235,7 +235,20 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
 
     # concatenate left and right images along the channel axis
-    output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
+    #output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
+
+    _ , ssim_left_image = ssim(left_input_image, left_reconstruct_im, data_range=left_reconstruct_im.max() - left_reconstruct_im.min(), full=True)
+    _ , ssim_right_image = ssim(right_input_image, right_reconstruct_im, data_range=right_reconstruct_im.max() - right_reconstruct_im.min(), full=True)    
+
+    left_reconstruct_im_gray = Lambda(lambda x: K.mean(x, axis=3))(left_reconstruct_im)
+    right_reconstruct_im_gray = Lambda(lambda x: K.mean(x, axis=3))(right_reconstruct_im)
+
+    left_reconstruct_im_gray_norm = Lambda(lambda x: x / K.max(x))(left_reconstruct_im_gray)
+    right_reconstruct_im_gray_norm = Lambda(lambda x: x / K.max(x))(right_reconstruct_im_gray)
+
+    left_reconstruct_gradient = Gradient()(left_reconstruct_im_gray_norm)
+    right_reconstruct_gradient = Gradient()(right_reconstruct_im_gray_norm)
+
 
     output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
     
@@ -257,7 +270,12 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     weighted_gradient_left = Lambda(lambda x: x[0] * (1-x[1]))([depth_left_gradient, image_left_gradient])
     weighted_gradient_right = Lambda(lambda x: x[0] * (1-x[1]))([depth_right_gradient, image_right_gradient])
 
-    model = Model(inputs=[inputs], outputs=[output_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right, depth_left, depth_right])
+
+    left_reconstruct = Lambda(lambda x: 0.8*(1-x[0])/2 + 0.15*K.abs(x[1] - x[2]) + 0.15*K.abs(x[3]-x[4]))(ssim_left_image,left_input_image,left_reconstruct_im,image_left_gradient,left_reconstruct_gradient)
+    right_reconstruct = Lambda(lambda x: 0.8*(1-x[0])/2 + 0.15*K.abs(x[1] - x[2]) + 0.15*K.abs(x[3]-x[4]))(ssim_right_image,right_input_image,right_reconstruct_im,image_right_gradient,right_reconstruct_gradient)
+
+
+    model = Model(inputs=[inputs], outputs=[left_reconstruct, right_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right, depth_left, depth_right])
 
     disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
 
