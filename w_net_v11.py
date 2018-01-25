@@ -7,22 +7,21 @@ from keras.layers.convolutional import SeparableConv2D
 from keras.models import Model
 from keras.engine.topology import Layer
 import numpy as np
-from skimage.measure import compare_ssim as ssim
+from bilinear_sampler import *
+
 
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 dl = 60
 
+#Convert this to do bilinear sampling instead. Input should be an image and an output of Depth layer.
 class Selection(Layer):
-    def __init__(self, disparity_levels=None, **kwargs):
+    def __init__(self,  **kwargs):
         # if none, initialize the disparity levels as described in deep3d
-        if disparity_levels is None:
-            disparity_levels = range(-dl, dl, 1)
 
         super(Selection, self).__init__(**kwargs)
 
-        self.disparity_levels = disparity_levels
 
     def build(self, input_shape):
         # Used purely for shape validation.
@@ -31,36 +30,7 @@ class Selection(Layer):
                              'on a list of 2 inputs.')
 
     def call(self, inputs):
-
-        # first we extract the left image from the original input
-        image = inputs[0]
-        # then the calculated disparity map that is the ouput of the Unet
-        disparity_map = inputs[1]
-        # initialize the stack of shifted left images
-        shifted_images = []
-        # loop over the different disparity levels and shift the left image accordingly, add it to the list
-        for shift in self.disparity_levels:
-            if shift > 0:
-                shifted_images += [K.concatenate([image[..., shift:, :], K.zeros_like(image[..., :shift, :])], axis=2)]
-            elif shift < 0:
-                shifted_images += [K.concatenate([K.zeros_like(image[..., shift:, :]), image[..., :shift, :]], axis=2)]
-            else:
-                shifted_images += [image]
-
-        # create a tensor of shape (None, im_rows, im_cols, disparity_levels)
-        shifted_images_stack = K.stack(shifted_images)
-        shifted_images_stack = K.permute_dimensions(shifted_images_stack, (1, 2, 3, 0, 4))
-
-        # take the dot product with the disparity map along the disparity axis
-        # and output the resulting right image of size (None, im_rows, im_cols)
-        new_image = []
-        for ch in range(3):
-            new_image += [K.sum(shifted_images_stack[..., ch] * disparity_map, axis=3)]
-
-        new_image = K.stack(new_image)
-        new_image = K.permute_dimensions(new_image, (1, 2, 3, 0))
-
-        return new_image
+	return bilinear_sampler_1d_h(inputs[0], inputs[1])
 
     def compute_output_shape(self, input_shape):
         return input_shape[0]
@@ -76,21 +46,24 @@ class Gradient(Layer):
         pass
 
     def call(self, inputs):
-        dinputs_dx_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :]), inputs[..., :-1, :]], axis=1)
-        dinputs_dx_1 = inputs - K.concatenate([inputs[..., 1:, :], K.zeros_like(inputs[..., :1, :])], axis=1)
+        dinputs_dx_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :,:]), inputs[..., :-1, :,:]], axis=1)
+        dinputs_dx_1 = inputs - K.concatenate([inputs[..., 1:, :,:], K.zeros_like(inputs[..., :1, :,:])], axis=1)
 
-        dinputs_dy_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1]), inputs[..., :-1]], axis=2)
-        dinputs_dy_1 = inputs - K.concatenate([inputs[..., 1:], K.zeros_like(inputs[..., :1])], axis=2)
+        dinputs_dy_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1,:]), inputs[..., :-1,:]], axis=2)
+        dinputs_dy_1 = inputs - K.concatenate([inputs[..., 1:,:], K.zeros_like(inputs[..., :1,:])], axis=2)
 
-        abs_gradient_sum = 0.25 * K.sqrt(
-            K.square(dinputs_dx_0) + K.square(dinputs_dx_1) + K.square(dinputs_dy_0) + K.square(dinputs_dy_1))
+	dinput_dx = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dx_0, dinputs_dx_1])
+	dinput_dy = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dy_0, dinputs_dy_1])
 
-        return abs_gradient_sum[..., 2:-2, 2:-2]
+	return [0.25*dinput_dx , 0.25*dinput_dy]
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], input_shape[1] - 4, input_shape[2] - 4)
+        return [(input_shape[0], input_shape[1] , input_shape[2]), (input_shape[0], input_shape[1] , input_shape[2])]
 
+    def compute_mask(self, input, input_mask=None):
+        return [None, None]
 
+#Convert this to do a soft argmin instead to produce a H X W depth map...already DONE!!
 class Depth(Layer):
     def __init__(self, disparity_levels=None, **kwargs):
         # if none, initialize the disparity levels as described in deep3d
@@ -225,59 +198,44 @@ def get_unet(img_rows, img_cols, lr=1e-4):
 
     right_disparity = SeparableConv2D(dl*2, (3, 3), activation='softmax', padding='same')(right_disparity)
 
+
     left_disparity_levels = range(0, dl*2, 1)
-    right_reconstruct_im = Selection(disparity_levels=left_disparity_levels)([left_input_image, left_disparity])
-
     right_disparity_levels = range(0, -dl*2, -1)
-    left_reconstruct_im = Selection(disparity_levels=right_disparity_levels)([right_input_image, right_disparity])
 
-    right_consistency_im = Selection(disparity_levels=left_disparity_levels)([left_reconstruct_im, left_disparity])
-    left_consistency_im = Selection(disparity_levels=right_disparity_levels)([right_reconstruct_im, right_disparity])	
+    depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
+    depth_right = Depth(disparity_levels=right_disparity_levels)(right_disparity)
+    
+    depth_left_expanded = Lambda(lambda x: K.expand_dims(x, axis=3)) (depth_left)
+    depth_left_gradient_x, depth_left_gradient_y = Gradient()(depth_left_expanded)
+    depth_right_expanded = Lambda(lambda x: K.expand_dims(x, axis=3)) (depth_right)
+    depth_right_gradient_x, depth_right_gradient_y = Gradient()(depth_right_expanded)
+
+
+    right_reconstruct_im = Selection()([left_input_image, depth_left])
+
+    left_reconstruct_im = Selection()([right_input_image, depth_right])
+
+    right_consistency_im = Selection()([left_reconstruct_im, depth_left])
+    left_consistency_im = Selection()([right_reconstruct_im, depth_right])	
 
     # concatenate left and right images along the channel axis
-    #output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
-
-    _ , ssim_left_image = ssim(left_input_image, left_reconstruct_im, data_range=left_reconstruct_im.max() - left_reconstruct_im.min(), full=True)
-    _ , ssim_right_image = ssim(right_input_image, right_reconstruct_im, data_range=right_reconstruct_im.max() - right_reconstruct_im.min(), full=True)    
-
-    left_reconstruct_im_gray = Lambda(lambda x: K.mean(x, axis=3))(left_reconstruct_im)
-    right_reconstruct_im_gray = Lambda(lambda x: K.mean(x, axis=3))(right_reconstruct_im)
-
-    left_reconstruct_im_gray_norm = Lambda(lambda x: x / K.max(x))(left_reconstruct_im_gray)
-    right_reconstruct_im_gray_norm = Lambda(lambda x: x / K.max(x))(right_reconstruct_im_gray)
-
-    left_reconstruct_gradient = Gradient()(left_reconstruct_im_gray_norm)
-    right_reconstruct_gradient = Gradient()(right_reconstruct_im_gray_norm)
-
-
-    output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
+    output_reconstruct = concatenate([left_reconstruct_im, right_reconstruct_im], axis=2)
     
-    # gradient regularization:
-    depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
-    depth_right = Depth(disparity_levels=left_disparity_levels)(right_disparity)
-    depth_left_gradient = Gradient()(depth_left)
-    depth_right_gradient = Gradient()(depth_right)
-
-    left_input_im_gray = Lambda(lambda x: K.mean(x, axis=3))(left_input_image)
-    right_input_im_gray = Lambda(lambda x: K.mean(x, axis=3))(right_input_image)
-
-    left_input_im_gray_norm = Lambda(lambda x: x / K.max(x))(left_input_im_gray)
-    right_input_im_gray_norm = Lambda(lambda x: x / K.max(x))(right_input_im_gray)
-
-    image_left_gradient = Gradient()(left_input_im_gray_norm)
-    image_right_gradient = Gradient()(right_input_im_gray_norm)
-
-    weighted_gradient_left = Lambda(lambda x: x[0] * (1-x[1]))([depth_left_gradient, image_left_gradient])
-    weighted_gradient_right = Lambda(lambda x: x[0] * (1-x[1]))([depth_right_gradient, image_right_gradient])
+    output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
 
 
-    left_reconstruct = Lambda(lambda x: 0.8*(1-x[0])/2 + 0.15*K.abs(x[1] - x[2]) + 0.15*K.abs(x[3]-x[4]))(ssim_left_image,left_input_image,left_reconstruct_im,image_left_gradient,left_reconstruct_gradient)
-    right_reconstruct = Lambda(lambda x: 0.8*(1-x[0])/2 + 0.15*K.abs(x[1] - x[2]) + 0.15*K.abs(x[3]-x[4]))(ssim_right_image,right_input_image,right_reconstruct_im,image_right_gradient,right_reconstruct_gradient)
+    image_left_gradient_x, image_left_gradient_y = Gradient()(left_input_image)
+    image_right_gradient_x, image_right_gradient_y  = Gradient()(right_input_image)
+
+	
+    weighted_gradient_left = Lambda(lambda x: x[0] * K.exp(-x[1]) + x[2] * K.exp(-x[3]))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
+    weighted_gradient_right = Lambda(lambda x: x[0] * K.exp(-x[1])+ x[2] * K.exp(-x[3]))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
 
 
-    model = Model(inputs=[inputs], outputs=[left_reconstruct, right_reconstruct, output_consistency, weighted_gradient_left, weighted_gradient_right, depth_left, depth_right])
+    model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, weighted_gradient_left, weighted_gradient_right])
 
-    disp_map_model = Model(inputs=[inputs], outputs=[left_disparity, right_disparity])
+
+    disp_map_model = Model(inputs=[inputs], outputs=[depth_left, depth_right])
 
     # we use L1 type loss as it has been shown to work better for that type of problem in the deep3d paper
     # (https://arxiv.org/abs/1604.03650)

@@ -33,24 +33,23 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
     def train_generator_func():
         while True:
             X = train_generator1.next()
-	    yield X, [np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-			np.zeros(shape=(X.shape[0], img_rows, img_cols)), 
-			np.zeros(shape=(X.shape[0], img_rows, img_cols)), 
-			np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
-                      	np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
-			np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-			np.zeros(shape=(X.shape[0], img_rows, img_cols))]
+	    yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
 
     def val_generator_func():
         while True:
-            X = validation_generator1.next()
-            yield X, [np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-			np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-                        np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-                        np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
-                        np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
-                        np.zeros(shape=(X.shape[0], img_rows, img_cols)),
-                        np.zeros(shape=(X.shape[0], img_rows, img_cols))] 
+		X = validation_generator1.next()
+		yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
+#[X[...,:img_cols,:],
+ #                       X[...,img_cols:,:],
+  #                      X,
+   #                     np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
+    #                    np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
+     #                   X,
+      #                  np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
+       #                 np.zeros(shape=(X.shape[0], img_rows - 4, img_cols - 4)),
+        #                np.zeros(shape=(X.shape[0], img_rows, img_cols)),
+         #               np.zeros(shape=(X.shape[0], img_rows, img_cols))]
+
     train_generator = train_generator_func()
     val_generator = val_generator_func()
 

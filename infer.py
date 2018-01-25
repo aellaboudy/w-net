@@ -27,7 +27,7 @@ def main(args):
     with tf.device("/cpu:0"):
     	w_net, disp_maps_forward = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-7)
     	
-    	w_net.compile(optimizer=Adam(lr=1e-7), loss='mean_absolute_error', loss_weights=[1.,1.,0.001,0.001,0.001,0.001])
+    	w_net.compile(optimizer=Adam(lr=1e-7), loss='mean_absolute_error', loss_weights=[1.,1.,1.,1.,1.,1.])
 
 
     	weight_path = model_path + '.h5'
@@ -36,23 +36,34 @@ def main(args):
     	depthmaps = []
     	for i in tqdm(range(12)):
     		dat = data_generator.next()
-    		disparity_map_left, disparity_map_right = disp_maps_forward.predict(dat[0][0:10])
+                left_reconstruct, right_reconstruct, output_reconstruct,output_consistency, weighted_gradient_left, weighted_gradient_right = w_net.predict(dat[0][0:10])
+    		depth_left, depth_right = disp_maps_forward.predict(dat[0][0:10])
 
-    		depthMap_left = np.zeros(disparity_map_left[0,...,0].shape)
-    		for i_disp, disp in zip(range(0,60*2),np.rollaxis(disparity_map_left[0,...],2)):
-        		depthMap_left += disp*i_disp
-
-    		depthMap_right = np.zeros(disparity_map_right[0,...,0].shape)
-    		for i_disp, disp in zip(range(0,-60*2),np.rollaxis(disparity_map_right[0,...],2)):
-        		depthMap_right += disp*i_disp
-        
     		plt.figure(figsize=(15,5))
-    		plt.subplot(1,2,2)
-    		plt.imshow(dat[0][0,:,:img_cols,:])
+    		
+                print (depth_left)
+                print (depth_right)
+                plt.subplot(1,2,2)
+                plt.imshow(dat[0][0,:,:img_cols,:])
     		plt.axis('off')
     		plt.subplot(1,2,1)
-    		plt.imshow(depthMap_left, cmap=plt.cm.jet)
+    		plt.imshow(depth_left[0,...], cmap=plt.cm.jet)
     		plt.axis('off')
+                
+
+                #plt.subplot(3,2,4)
+                #plt.imshow(dat[0][0,:,img_cols:,:])
+                #plt.axis('off')
+                #plt.subplot(3,2,3)
+                #plt.imshow(depth_right[0,...], cmap=plt.cm.jet)
+                #plt.axis('off')
+
+                #plt.subplot(3,2,5)
+                #plt.imshow(output_reconstruct[0,...])
+                #plt.axis('off')
+                #plt.subplot(3,2,6)
+                #plt.imshow(output_consistency[0,...])
+                #plt.axis('off')
     		plt.show()
 			
 
