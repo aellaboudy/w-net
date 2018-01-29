@@ -53,8 +53,8 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
     train_generator = train_generator_func()
     val_generator = val_generator_func()
 
-    training_samples = len(train_generator1.filenames)
-    val_samples = len(validation_generator1.filenames)
+    training_samples = train_generator1.filenames
+    val_samples = validation_generator1.filenames
 
     return train_generator, val_generator, training_samples, val_samples
 
