@@ -8,7 +8,7 @@ from keras.models import Model
 from keras.engine.topology import Layer
 import numpy as np
 from bilinear_sampler import *
-
+import tensorflow as tf
 
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
@@ -46,19 +46,23 @@ class Gradient(Layer):
         pass
 
     def call(self, inputs):
-        dinputs_dx_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :,:]), inputs[..., :-1, :,:]], axis=1)
-        dinputs_dx_1 = inputs - K.concatenate([inputs[..., 1:, :,:], K.zeros_like(inputs[..., :1, :,:])], axis=1)
+        dinputs_dx = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :]), inputs[..., :-1, :]], axis=1)
+        #dinputs_dx_1 = inputs - K.concatenate([inputs[..., 1:, :,:], K.zeros_like(inputs[..., :1, :,:])], axis=1)
 
-        dinputs_dy_0 = inputs - K.concatenate([K.zeros_like(inputs[..., :1,:]), inputs[..., :-1,:]], axis=2)
-        dinputs_dy_1 = inputs - K.concatenate([inputs[..., 1:,:], K.zeros_like(inputs[..., :1,:])], axis=2)
+        dinputs_dy = inputs - K.concatenate([K.zeros_like(inputs[..., :1]), inputs[..., :-1]], axis=2)
+        #dinputs_dy_1 = inputs - K.concatenate([inputs[..., 1:,:], K.zeros_like(inputs[..., :1,:])], axis=2)
 
-	dinput_dx = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dx_0, dinputs_dx_1])
-	dinput_dy = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dy_0, dinputs_dy_1])
+	#dinput_dx = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dx_0, dinputs_dx_1])
+	#dinput_dy = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dy_0, dinputs_dy_1])
+	
 
-	return [0.25*dinput_dx , 0.25*dinput_dy]
+	return [dinputs_dx[:,1:,1:] , dinputs_dy[:,1:,1:]]
 
     def compute_output_shape(self, input_shape):
-        return [(input_shape[0], input_shape[1] , input_shape[2]), (input_shape[0], input_shape[1] , input_shape[2])]
+        return [(input_shape[0], input_shape[1] - 1 , input_shape[2] - 1), (input_shape[0], input_shape[1] - 1, input_shape[2] - 1)]
+	#return [(None,None,None), (None,None,None)]
+
+
 
     def compute_mask(self, input, input_mask=None):
         return [None, None]
@@ -205,10 +209,12 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
     depth_right = Depth(disparity_levels=right_disparity_levels)(right_disparity)
     
-    depth_left_expanded = Lambda(lambda x: K.expand_dims(x, axis=3)) (depth_left)
-    depth_left_gradient_x, depth_left_gradient_y = Gradient()(depth_left_expanded)
-    depth_right_expanded = Lambda(lambda x: K.expand_dims(x, axis=3)) (depth_right)
-    depth_right_gradient_x, depth_right_gradient_y = Gradient()(depth_right_expanded)
+    depth_left_gradient_x, depth_left_gradient_y = Gradient()(depth_left)
+    depth_right_gradient_x, depth_right_gradient_y = Gradient()(depth_right)
+    depth_left_gradient_x, _ = Gradient()(depth_left_gradient_x)
+    _, depth_left_gradient_y = Gradient()(depth_left_gradient_y)
+    depth_right_gradient_x,_ = Gradient()(depth_right_gradient_x)
+    _, depth_right_gradient_y = Gradient()(depth_right_gradient_y)
 
 
     right_reconstruct_im = Selection()([left_input_image, depth_left])
@@ -223,16 +229,25 @@ def get_unet(img_rows, img_cols, lr=1e-4):
     
     output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
 
+    left_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_input_image)
+    right_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_input_image)
+    image_left_gradient_x, image_left_gradient_y = Gradient()(left_input_gray)
+    image_right_gradient_x, image_right_gradient_y  = Gradient()(right_input_gray)
+    image_left_gradient_x, _ = Gradient()(image_left_gradient_x)
+    _, image_left_gradient_y = Gradient()(image_left_gradient_y)
+    image_right_gradient_x,_ = Gradient()(image_right_gradient_x)
+    _, image_right_gradient_y = Gradient()(image_right_gradient_y)
 
-    image_left_gradient_x, image_left_gradient_y = Gradient()(left_input_image)
-    image_right_gradient_x, image_right_gradient_y  = Gradient()(right_input_image)
-
+    left_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_reconstruct_im)
+    right_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_reconstruct_im)
+    output_gradient_left = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(left_reconstruct_gray) + Gradient()(left_input_gray))
+    output_gradient_right = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(right_reconstruct_gray) + Gradient()(right_input_gray))
 	
-    weighted_gradient_left = Lambda(lambda x: x[0] * K.exp(-x[1]) + x[2] * K.exp(-x[3]))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
-    weighted_gradient_right = Lambda(lambda x: x[0] * K.exp(-x[1])+ x[2] * K.exp(-x[3]))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
+    weighted_gradient_left = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.abs(x[1])) + K.abs(x[2]) * K.exp(-K.abs(x[3])))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
+    weighted_gradient_right = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.abs(x[1]))+ K.abs(x[2]) * K.exp(-K.abs(x[3])))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
 
 
-    model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, weighted_gradient_left, weighted_gradient_right])
+    model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, output_gradient_left, output_gradient_right,weighted_gradient_left, weighted_gradient_right,depth_left,depth_right])
 
 
     disp_map_model = Model(inputs=[inputs], outputs=[depth_left, depth_right])

@@ -33,12 +33,12 @@ def get_data_generators(train_folder, val_folder, img_rows=128, img_cols=224, ba
     def train_generator_func():
         while True:
             X = train_generator1.next()
-	    yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
+	    yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows-1, img_cols-1)),np.zeros(shape=(X.shape[0], img_rows-1, img_cols-1)),np.zeros(shape=(X.shape[0], img_rows-2, img_cols-2)),np.zeros(shape=(X.shape[0], img_rows-2, img_cols-2)),np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
 
     def val_generator_func():
         while True:
 		X = validation_generator1.next()
-		yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
+		yield X, [X[...,:img_cols,:],X[...,img_cols:,:],X,X,np.zeros(shape=(X.shape[0], img_rows-1, img_cols-1)),np.zeros(shape=(X.shape[0], img_rows-1, img_cols-1)),np.zeros(shape=(X.shape[0], img_rows-2, img_cols-2)),np.zeros(shape=(X.shape[0], img_rows-2, img_cols-2)),np.zeros(shape=(X.shape[0], img_rows, img_cols)),np.zeros(shape=(X.shape[0], img_rows, img_cols))]
 #[X[...,:img_cols,:],
  #                       X[...,img_cols:,:],
   #                      X,

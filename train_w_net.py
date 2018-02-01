@@ -24,9 +24,9 @@ def schedule_lr(epoch):
 
 def main(args):
     img_rows = 128
-    img_cols = 832/2
+    img_cols = 416
     batch_size = 1
-    n_epochs = 50
+    n_epochs = 100
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
@@ -48,12 +48,14 @@ def main(args):
     # Add Horovod Distributed Optimizer.
     opt = hvd.DistributedOptimizer(opt)
     
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/train/',
-                                                                                        val_folder='/home/ubuntu/data/stereoimages/images/val/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/',
+                                                                                        val_folder='/home/ubuntu/kitti_competition/data/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
 
+    training_samples = len(training_samples)
+    val_samples = len(val_samples)
     print('found {} training samples and {} validation samples'.format(training_samples, val_samples))
     print('...')
     print('building model...')
@@ -64,13 +66,14 @@ def main(args):
    
 
 
-    w_net.compile(optimizer=opt, loss=[DSSIMObjective(), DSSIMObjective(),'mean_absolute_error','mean_absolute_error', 'mean_absolute_error','mean_absolute_error'], loss_weights=[0.8,0.8,0.4,1.0,0.001,0.001]) 
+    w_net.compile(optimizer=opt, loss=[DSSIMObjective(), DSSIMObjective(),'mean_absolute_error','mean_absolute_error', 'mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error'], loss_weights=[0.8,0.8,0.2,2.0,0.1,0.1,0.001,0.001,0.0001,0.0001]) 
     callbacks = [
     	# Broadcast initial variable states from rank 0 to all other processes.
     	# This is necessary to ensure consistent initialization of all workers when
     	# training is started with random weights or restored from a checkpoint.
     	hvd.callbacks.BroadcastGlobalVariablesCallback(0),
-	LearningRateScheduler(schedule_lr)
+	#LearningRateScheduler(schedule_lr)
+	ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, verbose=1, mode='auto', min_lr=0)
     ]
 
     model_path = os.path.join(models_folder, model_name)
@@ -82,7 +85,7 @@ def main(args):
                                                        save_weights_only=True,
                                                        mode='auto', period=1))
 	
-    w_net.load_weights(model_path + '.h5')
+    #w_net.load_weights(model_path + '.h5')
     #print('saving model to {}...'.format(model_path))
     #model_yaml = w_net.to_yaml()
     #with open(model_path + ".yaml", "w") as yaml_file:
