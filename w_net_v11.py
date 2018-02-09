@@ -13,7 +13,7 @@ import tensorflow as tf
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-dl = 60
+dl = 25
 
 #Convert this to do bilinear sampling instead. Input should be an image and an output of Depth layer.
 class Selection(Layer):
