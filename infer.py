@@ -22,8 +22,8 @@ def main(args):
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
-    data_generator, _ , data_filenames, _ = get_data_generators('/home/ubuntu/kitti_competition/data/',
-                                                     '/home/ubuntu/kitti_competition/data/', 
+    data_generator, _ , data_filenames, _ = get_data_generators('/Users/ameerellaboudy/data/test/',
+                                                     '/Users/ameerellaboudy/data/test/', 
                                                      batch_size=1,
                                                     shuffle=False, img_rows=img_rows, img_cols=img_cols)
 
