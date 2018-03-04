@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from keras.utils.training_utils import multi_gpu_model
 from keras.optimizers import Adam, Adadelta, RMSprop
-import horovod.keras as hvd
+#import horovod.keras as hvd
 from keras import backend as K    
 from keras_contrib.losses.dssim import DSSIMObjective
 
@@ -23,8 +23,8 @@ def schedule_lr(epoch):
 
 
 def main(args):
-    img_rows = 128
-    img_cols = 416
+    img_rows = 128/2
+    img_cols = 416/2
     batch_size = 1
     n_epochs = 100
     models_folder = 'models'
@@ -33,23 +33,23 @@ def main(args):
 
     # Initialize Horovod
     print ('Initializing')
-    hvd.init()
+    #hvd.init()
     print ('Initialized')
 
     # Pin GPU to be used to process local rank (one GPU per process)
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
-    K.set_session(tf.Session(config=config))
+    #config = tf.ConfigProto()
+    #config.gpu_options.allow_growth = True
+    #config.gpu_options.visible_device_list = str(hvd.local_rank())
+    #K.set_session(tf.Session(config=config))
 
     # Adjust learning rate based on number of GPUs.
     opt = Adam(lr=1e-4)
 
     # Add Horovod Distributed Optimizer.
-    opt = hvd.DistributedOptimizer(opt)
+    #opt = hvd.DistributedOptimizer(opt)
     
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/ubuntu/data/stereoimages/images/',
-                                                                                        val_folder='/home/ubuntu/kitti_competition/data/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/amel/data/stereoimages/images/val/',
+                                                                                        val_folder='/home/amel/data/stereoimages/images/test/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
@@ -71,15 +71,15 @@ def main(args):
     	# Broadcast initial variable states from rank 0 to all other processes.
     	# This is necessary to ensure consistent initialization of all workers when
     	# training is started with random weights or restored from a checkpoint.
-    	hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+    	#hvd.callbacks.BroadcastGlobalVariablesCallback(0),
 	#LearningRateScheduler(schedule_lr)
 	ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, verbose=1, mode='auto', min_lr=0)
     ]
 
     model_path = os.path.join(models_folder, model_name)
     # Save checkpoints only on worker 0 to prevent other workers from corrupting them.
-    if hvd.rank() == 0:
-    	callbacks.append(ModelCheckpoint(model_path + '.h5', monitor='loss',
+    #if hvd.rank() == 0:
+    callbacks.append(ModelCheckpoint(model_path + '.h5', monitor='loss',
                                                        verbose=0,
                                                        save_best_only=False,
                                                        save_weights_only=True,
@@ -100,10 +100,10 @@ def main(args):
 
 
     w_net.fit_generator(train_generator,
-                            steps_per_epoch=(training_samples // batch_size)//hvd.size(),
+                            steps_per_epoch=(training_samples // batch_size),#//hvd.size(),
                             epochs=n_epochs,
                             validation_data=val_generator,
-                            validation_steps=(val_samples // batch_size)//hvd.size(),
+                            validation_steps=(val_samples // batch_size),#//hvd.size(),
                             verbose=1, callbacks=callbacks)
 
 
