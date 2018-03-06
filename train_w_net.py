@@ -23,10 +23,10 @@ def schedule_lr(epoch):
 
 
 def main(args):
-    img_rows = 128/2
-    img_cols = 416/2
+    img_rows = 128
+    img_cols = 416
     batch_size = 1
-    n_epochs = 100
+    n_epochs = 10
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
@@ -48,8 +48,8 @@ def main(args):
     # Add Horovod Distributed Optimizer.
     #opt = hvd.DistributedOptimizer(opt)
     
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/amel/data/stereoimages/images/val/',
-                                                                                        val_folder='/home/amel/data/stereoimages/images/test/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/Users/ameerellaboudy/SfMLearner/stereoimages/',
+                                                                                        val_folder='/Users/ameerellaboudy/SfMLearner/stereoimages/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
