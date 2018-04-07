@@ -13,7 +13,7 @@ import tensorflow as tf
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-dl = 50
+
 
 #Convert this to do bilinear sampling instead. Input should be an image and an output of Depth layer.
 class Selection(Layer):
@@ -99,7 +99,7 @@ class Depth(Layer):
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 
-def get_unet(img_rows, img_cols, lr=1e-4):
+def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
     inputs = Input((img_rows, 2 * img_cols, 3))  # 2 channels: left and right images
 
 	
