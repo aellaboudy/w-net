@@ -85,12 +85,12 @@ class Depth(Layer):
 
     def call(self, disparity):
 
-        depth = []
+	depth = []
         for n, disp in enumerate(self.disparity_levels):
             depth += [disparity[..., n] * disp]
-
-        depth = K.concatenate(depth, axis=0)
-        return K.sum(depth, axis=0, keepdims=True)
+        
+        depth = K.stack(depth, axis=0)
+	return K.sum(depth, axis=0, keepdims=False)
 
     def compute_output_shape(self, input_shape):
         return input_shape[:-1]
