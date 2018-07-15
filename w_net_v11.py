@@ -211,10 +211,10 @@ def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
     
     depth_left_gradient_x, depth_left_gradient_y = Gradient()(depth_left)
     depth_right_gradient_x, depth_right_gradient_y = Gradient()(depth_right)
-    depth_left_gradient_x, _ = Gradient()(depth_left_gradient_x)
-    _, depth_left_gradient_y = Gradient()(depth_left_gradient_y)
-    depth_right_gradient_x,_ = Gradient()(depth_right_gradient_x)
-    _, depth_right_gradient_y = Gradient()(depth_right_gradient_y)
+    #depth_left_gradient_x, _ = Gradient()(depth_left_gradient_x)
+    #_, depth_left_gradient_y = Gradient()(depth_left_gradient_y)
+    #depth_right_gradient_x,_ = Gradient()(depth_right_gradient_x)
+    #_, depth_right_gradient_y = Gradient()(depth_right_gradient_y)
 
 
     right_reconstruct_im = Selection()([left_input_image, depth_left])
@@ -229,22 +229,22 @@ def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
     
     output_consistency = concatenate([left_consistency_im, right_consistency_im], axis=2)
 
-    left_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_input_image)
-    right_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_input_image)
-    image_left_gradient_x, image_left_gradient_y = Gradient()(left_input_gray)
-    image_right_gradient_x, image_right_gradient_y  = Gradient()(right_input_gray)
-    image_left_gradient_x, _ = Gradient()(image_left_gradient_x)
-    _, image_left_gradient_y = Gradient()(image_left_gradient_y)
-    image_right_gradient_x,_ = Gradient()(image_right_gradient_x)
-    _, image_right_gradient_y = Gradient()(image_right_gradient_y)
+    #left_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_input_image)
+    #right_input_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_input_image)
+    image_left_gradient_x, image_left_gradient_y = Gradient()(left_input_image)
+    image_right_gradient_x, image_right_gradient_y  = Gradient()(right_input_image)
+    #image_left_gradient_x, _ = Gradient()(image_left_gradient_x)
+    #_, image_left_gradient_y = Gradient()(image_left_gradient_y)
+    #image_right_gradient_x,_ = Gradient()(image_right_gradient_x)
+    #_, image_right_gradient_y = Gradient()(image_right_gradient_y)
 
-    left_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_reconstruct_im)
-    right_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_reconstruct_im)
-    output_gradient_left = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(left_reconstruct_gray) + Gradient()(left_input_gray))
-    output_gradient_right = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(right_reconstruct_gray) + Gradient()(right_input_gray))
+    #left_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(left_reconstruct_im)
+    #right_reconstruct_gray = Lambda(lambda x: K.squeeze(tf.image.rgb_to_grayscale(x),axis=3))(right_reconstruct_im)
+    #output_gradient_left = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(left_reconstruct_gray) + Gradient()(left_input_gray))
+    #output_gradient_right = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(right_reconstruct_gray) + Gradient()(right_input_gray))
 	
-    weighted_gradient_left = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.abs(x[1])) + K.abs(x[2]) * K.exp(-K.abs(x[3])))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
-    weighted_gradient_right = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.abs(x[1]))+ K.abs(x[2]) * K.exp(-K.abs(x[3])))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
+    weighted_gradient_left = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),3)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3)))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
+    weighted_gradient_right = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),3)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3)))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
 
 
     model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, output_gradient_left, output_gradient_right,weighted_gradient_left, weighted_gradient_right,depth_left,depth_right])
