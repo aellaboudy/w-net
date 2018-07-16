@@ -46,10 +46,10 @@ class Gradient(Layer):
         pass
 
     def call(self, inputs):
-        dinputs_dx = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :]), inputs[..., :-1, :]], axis=1)
+        dinputs_dx = inputs - K.concatenate([K.zeros_like(inputs[..., :1, :, :]), inputs[..., :-1, :, :]], axis=1)
         #dinputs_dx_1 = inputs - K.concatenate([inputs[..., 1:, :,:], K.zeros_like(inputs[..., :1, :,:])], axis=1)
 
-        dinputs_dy = inputs - K.concatenate([K.zeros_like(inputs[..., :1]), inputs[..., :-1]], axis=2)
+        dinputs_dy = inputs - K.concatenate([K.zeros_like(inputs[..., :1,:]), inputs[..., :-1,:]], axis=2)
         #dinputs_dy_1 = inputs - K.concatenate([inputs[..., 1:,:], K.zeros_like(inputs[..., :1,:])], axis=2)
 
 	#dinput_dx = Lambda(lambda x : K.mean(K.abs(x[0] + x[1]),axis=3)) ([dinputs_dx_0, dinputs_dx_1])
@@ -59,7 +59,7 @@ class Gradient(Layer):
 	return [dinputs_dx[:,1:,1:] , dinputs_dy[:,1:,1:]]
 
     def compute_output_shape(self, input_shape):
-        return [(input_shape[0], input_shape[1] - 1 , input_shape[2] - 1), (input_shape[0], input_shape[1] - 1, input_shape[2] - 1)]
+        return [(input_shape[0], input_shape[1] - 1 , input_shape[2] - 1, input_shape[3]), (input_shape[0], input_shape[1] - 1, input_shape[2] - 1, input_shape[3])]
 	#return [(None,None,None), (None,None,None)]
 
 
@@ -99,7 +99,7 @@ class Depth(Layer):
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 
-def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
+def get_unet(img_rows, img_cols, lr=1e-4, dl = 50/2):
     inputs = Input((img_rows, 2 * img_cols, 3))  # 2 channels: left and right images
 
 	
@@ -208,9 +208,10 @@ def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
 
     depth_left = Depth(disparity_levels=left_disparity_levels)(left_disparity)
     depth_right = Depth(disparity_levels=right_disparity_levels)(right_disparity)
-    
-    depth_left_gradient_x, depth_left_gradient_y = Gradient()(depth_left)
-    depth_right_gradient_x, depth_right_gradient_y = Gradient()(depth_right)
+   
+     
+    depth_left_gradient_x, depth_left_gradient_y = Gradient()(Lambda (lambda x: K.expand_dims(x,axis=3)) (depth_left))
+    depth_right_gradient_x, depth_right_gradient_y = Gradient()(Lambda (lambda x: K.expand_dims(x,axis=3)) (depth_right))
     #depth_left_gradient_x, _ = Gradient()(depth_left_gradient_x)
     #_, depth_left_gradient_y = Gradient()(depth_left_gradient_y)
     #depth_right_gradient_x,_ = Gradient()(depth_right_gradient_x)
@@ -243,11 +244,11 @@ def get_unet(img_rows, img_cols, lr=1e-4, dl = 50):
     #output_gradient_left = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(left_reconstruct_gray) + Gradient()(left_input_gray))
     #output_gradient_right = Lambda(lambda x: K.abs(x[0] - x[2]) + K.abs(x[1] - x[3])) (Gradient()(right_reconstruct_gray) + Gradient()(right_input_gray))
 	
-    weighted_gradient_left = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),3)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3)))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
-    weighted_gradient_right = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),3)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3)))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
+    weighted_gradient_left = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),axis=3,keepdims=True)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3,keepdims=True)))([depth_left_gradient_x, image_left_gradient_x, depth_left_gradient_y, image_left_gradient_y])
+    weighted_gradient_right = Lambda(lambda x: K.abs(x[0]) * K.exp(-K.mean(K.abs(x[1]),axis=3,keepdims=True)) + K.abs(x[2]) * K.exp(-K.mean(K.abs(x[3]),axis=3,keepdims=True)))([depth_right_gradient_x, image_right_gradient_x, depth_right_gradient_y, image_right_gradient_y])
 
 
-    model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, output_gradient_left, output_gradient_right,weighted_gradient_left, weighted_gradient_right,depth_left,depth_right])
+    model = Model(inputs=[inputs], outputs=[left_reconstruct_im,right_reconstruct_im,output_reconstruct,output_consistency, weighted_gradient_left, weighted_gradient_right,depth_left,depth_right])
 
 
     disp_map_model = Model(inputs=[inputs], outputs=[depth_left, depth_right])

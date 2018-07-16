@@ -23,10 +23,10 @@ def schedule_lr(epoch):
 
 
 def main(args):
-    img_rows = 128
-    img_cols = 416
+    img_rows = 128/2
+    img_cols = 416/2
     batch_size = 1
-    n_epochs = 10
+    n_epochs = 20
     models_folder = 'models'
     model_name = 'w_net_V12'
     model_path = os.path.join(models_folder, model_name)
@@ -43,13 +43,13 @@ def main(args):
     #K.set_session(tf.Session(config=config))
 
     # Adjust learning rate based on number of GPUs.
-    opt = Adam(lr=1e-4)
+    opt = Adam(lr=1e-3)
 
     # Add Horovod Distributed Optimizer.
     #opt = hvd.DistributedOptimizer(opt)
     
-    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/Users/ameerellaboudy/SfMLearner/stereoimages/',
-                                                                                        val_folder='/Users/ameerellaboudy/SfMLearner/stereoimages/',
+    train_generator, val_generator, training_samples, val_samples = get_data_generators(train_folder='/home/amel/data/stereoimages/images/train/',
+                                                                                        val_folder='/home/amel/data/stereoimages/images/val/',
                                                                                         img_rows=img_rows,
                                                                                         img_cols=img_cols,
                                                                                         batch_size=batch_size)
@@ -63,10 +63,8 @@ def main(args):
     w_net, disp_map_model = get_unet(img_rows=img_rows, img_cols=img_cols, lr=1e-7)
 
 
-   
 
-
-    w_net.compile(optimizer=opt, loss=[DSSIMObjective(), DSSIMObjective(),'mean_absolute_error','mean_absolute_error', 'mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error'], loss_weights=[0.8,0.8,0.2,2.0,0.1,0.1,0.001,0.001,0.0001,0.0001]) 
+    w_net.compile(optimizer=opt, loss=[DSSIMObjective(), DSSIMObjective(),'mean_absolute_error','mean_absolute_error', 'mean_absolute_error','mean_absolute_error','mean_absolute_error','mean_absolute_error'], loss_weights=[0.8,0.8,0.4,2.0,0.001,0.001,0.0001,0.0001]) 
     callbacks = [
     	# Broadcast initial variable states from rank 0 to all other processes.
     	# This is necessary to ensure consistent initialization of all workers when
